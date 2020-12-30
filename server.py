@@ -92,7 +92,8 @@ def run_server():
     server_port = "12121"
     # enable broadcasting mode
     server_udp.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    message = "0xfeedbeef" + " " + "0x2" + " " + server_port
+    # message = "0xfeedbeef" + " " + "0x2" + " " + server_port
+    message = struct.pack('Ibh', 0xfeedbeef, 0x2, int(server_port))
     print("Server started, listening on IP address 172.1.0.4")
     executor = thread.ThreadPoolExecutor(max_workers=2)
     func1 = executor.submit(broadcast_message, server_udp, message)

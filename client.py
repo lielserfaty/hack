@@ -22,7 +22,12 @@ def run_client():
 
 def connect_to_server( addr, data):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((addr[0], int(data.decode().split(" ")[2])))
+     magic_cookie, message_type, port_tcp = struct.unpack('Ibh', data)
+    if magic_cookie != 0xfeedbeef or message_type != 0x2:
+        continue
+    client_socket.connect((addr[0], port_tcp))    
+    # print(data.hex())
+    # client_socket.connect((addr[0], int(data.hex().split(" ")[2])))
     message_to_server="efrat"
     client_socket.send(message_to_server.encode("utf-8")+'\n'.encode("utf-8"))
     # get message from server about start the game and print it
