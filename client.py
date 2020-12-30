@@ -1,5 +1,5 @@
 import socket
-import msvcrt
+from getch import getch
 import threading
 from _thread import start_new_thread
 import time
@@ -35,8 +35,7 @@ def connect_to_server( addr, data):
 
 def func1(client_socket):
    while True:
-        if msvcrt.kbhit():
-            line=msvcrt.getch()
+            line=getch()
             client_socket.send(line)
 
 def func2(client_socket):

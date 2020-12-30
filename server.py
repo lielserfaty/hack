@@ -14,12 +14,6 @@ def broadcast_message(server_udp, message):
         end = time.time()
         elapsed = end - start
         if elapsed <= 10:
-            try:
-                ip_address = get_if_addr('eth1')
-                if (ip_address == "0.0.0.0") or (ip_address is None):
-                    print("lk")
-            except Exception as e:
-                print("ll")
             server_udp.sendto(message.encode("utf-8"), ('<broadcast>', 13117))
             time.sleep(1)
         else:
@@ -90,9 +84,6 @@ def start_game(clients):
         client[1].close()
     print("offer new")
     run_server()
-
-
-
 
 
 
