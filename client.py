@@ -38,24 +38,67 @@ def connect_to_server( addr, data):
     print(data.decode())
 
     start_new_thread(func1,(client_socket,))
-    start_new_thread(func2,(client_socket,))
+    #start_new_thread(func2,(client_socket,))
     while True:
         continue
 
-
 def func1(client_socket):
-   while True:
-            line=getch()
-            client_socket.send(line.encode("utf-8"))
+    try:
+        while True:
+                line=getch()
+                client_socket.send(line.encode("utf-8"))
+    except Exception as exc :
+       print("wait to offer")
+       run_client() 
+
+
+
+
+
+
+
+
+
+
+def isData():
+    import sys
+    import select
+    import tty
+    import termios
+    return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
+"""
+def func1(client_socket):
+    import sys
+    import select
+    import tty
+    import termios
+    old_settings = termios.tcgetattr(sys.stdin)
+    try:
+        tty.setcbreak(sys.stdin.fileno())      
+        while 1 :
+            if isData():
+                c = sys.stdin.read(1)
+                client_socket.send("s".encode("utf-8"))
+
+                if c == '\x1b':         # x1b is ESC
+                    break
+
+    except Exception as exc :
+       print("wait to offer")
+       run_client()
+
+"""
+
+
 
 def func2(client_socket):
-    client_socket.settimeout(25)
+    client_socket.settimeout(10)
     try:
         while True:
             data, addr = client_socket.recvfrom(1024)
     except:
         print("wait to offer")
-        run_client()
+        
 
 
 
