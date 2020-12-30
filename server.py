@@ -14,7 +14,7 @@ def broadcast_message(server_udp, message):
         end = time.time()
         elapsed = end - start
         if elapsed <= 10:
-            server_udp.sendto(message.encode("utf-8"), ('<broadcast>', 13117))
+            server_udp.sendto(message, ('<broadcast>', 13117))
             time.sleep(1)
         else:
             break
@@ -25,6 +25,7 @@ def accept_server_tcp(server_port):
     server_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # bind the socket to a public host, and a well-known port
     server_tcp.bind((socket.gethostbyname(socket.gethostname()), int(server_port)))
+    print(socket.gethostbyname(socket.gethostname()))
     # become a server socket
     server_tcp.listen(10)
     server_tcp.settimeout(10)
@@ -79,7 +80,7 @@ def start_game(clients):
         message+="\nGroup2 wins"+"\nCongratulations to the winners"+"\n=="+player_group_b
     else:
         message+="Teco"
-
+    print(message)
     for client in clients:
         client[1].close()
     print("offer new")
