@@ -1,106 +1,129 @@
 import socket
-from getch import getch
-import threading
-from _thread import start_new_thread
 import time
-import struct
+import termios
+import tty
+import sys
+
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 
 def run_client():
-    print("Client started, listening for offer requests...")
+    """
+    The main function of the customer.
+    Responsible for running the client's connection with the server .
+    :return:
+    """
+
+    print(f"{bcolors.HEADER}Client started, listening for offer requests...")
+
+    # create udp socket
     client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)  # UDP
+
     # Enable broadcasting mode
     client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     client.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
     client.bind(("", 13117))
+
+    # Wait to udp Connection with the server
     while True:
-        data, addr = client.recvfrom(2048)
-        print("Received offer from 172.1.0.4, attempting to connect...")
-        # check valid udp-message
-        break
-    connect_to_server(addr, data)
+        try:
+            data, addres = client.recvfrom(2048)
+            server_ip = str(addres[0])
+            print(f"{bcolors.FAIL}Received offer from " + server_ip + ", attempting to connect...")
+            # close the udp connection
+            client.close()
+            break
+        except:
+            print("The Connection Is Fails..Try Again")
+            continue
+
+    connect_to_server(server_ip, data)
 
 
-def connect_to_server( addr, data):
+def connect_to_server(server_ip, message):
+    """
+    The function creates a TCP connection with the server
+    :param server_ip: The ip of the server
+    :param data: the message
+    :return:
+    """
+    time.sleep(2)
+
+    # open the packet
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # magic_cookie, message_type, port_tcp = struct.unpack('Ibh', data)
-    # if magic_cookie != 0xfeedbeef or message_type != 0x2:
-    #     pass
-    # print(addr)
-    # print(port_tcp)
-    # client_socket.connect((addr[0], port_tcp))    
-    # print(data.hex())
-    client_socket.connect(("172.1.0.24", 12121))
-    # client_socket.connect((addr[0], int(data.hex().split(" ")[2])))
-    message_to_server="efrat"
-    client_socket.send(message_to_server.encode("utf-8")+'\n'.encode("utf-8"))
-    # get message from server about start the game and print it
-    data, addr = client_socket.recvfrom(1024)
-    print(data.decode())
+    message = message.hex()
+    port_tcp = int(message[10:], 16)
 
-    start_new_thread(func1,(client_socket,))
-    #start_new_thread(func2,(client_socket,))
-    while True:
-        continue
-
-def func1(client_socket):
     try:
-        while True:
-                line=getch()
-                client_socket.send(line.encode("utf-8"))
-    except Exception as exc :
-       print("wait to offer")
-       run_client() 
+        # Wait to Tcp Connection with the server
+        client_socket.connect((server_ip, port_tcp))
+        message_to_server = "ASTRA"
+        client_socket.send(message_to_server.encode("utf-8") + '\n'.encode("utf-8"))
 
+        # get message from server about start the game and print it
+        data, addr = client_socket.recvfrom(1024)
+        print(data.decode())
+        # start the game
+        play_game(client_socket)
 
-
-
-
-
-
-
+    except:
+        print("The Connection Is Fails..Try Again")
+        pass
 
 
 def isData():
-    import sys
+    """
+    grab the press from the keyboard
+    :return:
+    """
     import select
-    import tty
-    import termios
     return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
-"""
-def func1(client_socket):
-    import sys
-    import select
-    import tty
-    import termios
+
+
+def play_game(client_socket):
+    """
+    This function is the real game where the client types letters and sends a message to the server.
+    The function stop after 10 seconds.
+    :param client_socket: the tcp socket
+    :return:
+    """
     old_settings = termios.tcgetattr(sys.stdin)
-    try:
-        tty.setcbreak(sys.stdin.fileno())      
-        while 1 :
-            if isData():
-                c = sys.stdin.read(1)
-                client_socket.send("s".encode("utf-8"))
 
-                if c == '\x1b':         # x1b is ESC
-                    break
+    tty.setcbreak(sys.stdin.fileno())
 
-    except Exception as exc :
-       print("wait to offer")
-       run_client()
+    start_time = time.time()
+    while True:
+        if isData():
+            inp = sys.stdin.read(1)
+            try:
+                client_socket.send(inp.encode('utf-8'))
+            except:
+                print("the connection is fails..try again")
+                break
+        time.sleep(0.1)
+        if 10 < time.time() - start_time:
+            try:
+                data, addres = client_socket.recvfrom(1024)
+                print(data.decode())
+                client_socket.close()
+                print(f"{bcolors.UNDERLINE}Server disconnected, listening for offer requests... ")
 
-"""
-
-
-
-def func2(client_socket):
-    client_socket.settimeout(10)
-    try:
-        while True:
-            data, addr = client_socket.recvfrom(1024)
-    except:
-        print("wait to offer")
-        
-
+                # the client start again
+                run_client()
+                break
+            except:
+                print("the connection is fails..try again")
+                break
 
 
 run_client()
-
