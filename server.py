@@ -142,7 +142,7 @@ def run_server():
 
     # init the server property
     server_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    server_port = "11331"
+    server_port = "2024"
     server_name = str(get_if_addr("eth1"))
 
     # enable broadcasting mode
@@ -163,7 +163,7 @@ def run_server():
     tcp_conn.result()
 
     while True:
-        time.sleep(5)
+        time.sleep(500)
         continue
 
 
